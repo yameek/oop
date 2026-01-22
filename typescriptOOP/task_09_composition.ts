@@ -43,7 +43,7 @@
  */
 
 // Write your solution below this line 👇
-interface Processor {
+    interface Processor {
 	boot(): void;
 	execute(task: string): void;
 }

@@ -247,3 +247,18 @@ This question bank takes you from basic proficiency to mastery (FAANG-level) wit
         *   Step 3 (**Compensation**): Order Service -> Cancel/Reject Order.
     *   **NestJS/Spring**: Both support this via Event Bus (RabbitMQ/Kafka) consumers triggering success or failure/compensation events.
 
+---
+
+## 📌 Code Implementation References (Self-Study)
+*Practical code examples in this workspace that demonstrate the concepts above.*
+
+| Concept | Language | File Path |
+|---------|----------|-----------|
+| **Generics (Stack/Queue)** | Go | [golangOOP/solutions/solution_09_generics.go](golangOOP/solutions/solution_09_generics.go) |
+| **Context Managers** | Python | [pythonOOP/solutions/solution_08_magic_methods.py](pythonOOP/solutions/solution_08_magic_methods.py) |
+| **Iterators & Symbols** | TypeScript | [typescriptOOP/solutions/solution_08_symbols_iterators.ts](typescriptOOP/solutions/solution_08_symbols_iterators.ts) |
+| **Design Patterns** | All | `*/solutions/solution_10_design_patterns.*` |
+| **Collections Intro** | TS | [typescript-collections/COMPARISON.md](typescript-collections/COMPARISON.md) |
+| **Dependency Injection** | MD | [spring-vs-nestjs/DI_DEPENDENCY_DEEP_DIVE.md](spring-vs-nestjs/DI_DEPENDENCY_DEEP_DIVE.md) |
+
+

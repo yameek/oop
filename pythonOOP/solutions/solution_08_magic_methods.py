@@ -350,6 +350,64 @@ class ShoppingCart:
         print(f"{'=' * 60}")
 
 
+
+class DatabaseConnection:
+    """
+    Simulated Database Connection using Context Manager Protocol
+    
+    CONCEPTS:
+    ---------
+    1. __enter__: Setup resource (open file, connect DB)
+    2. __exit__: Cleanup resource (close file, disconnect DB)
+    3. Used with 'with' statement
+    """
+    
+    def __init__(self, db_name):
+        self.db_name = db_name
+        self.connected = False
+        print(f"  [DB] Initializing connection object for '{db_name}'")
+        
+    def __enter__(self):
+        """
+        Enter the runtime context related to this object.
+        
+        Returns:
+        --------
+        self : The object to be used in the 'with' block
+        """
+        print(f"  [DB] Connecting to '{self.db_name}'...")
+        self.connected = True
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Exit the runtime context.
+        
+        Parameters:
+        -----------
+        exc_type : Exception type (if error occurred)
+        exc_val : Exception value
+        exc_tb : Traceback
+        
+        Returns:
+        --------
+        bool : True to suppress exception, False to propagate
+        """
+        print(f"  [DB] Closing connection to '{self.db_name}'...")
+        self.connected = False
+        
+        if exc_type:
+            print(f"  [DB] Error occurred: {exc_val}")
+            # Return True to handle exception gracefully, False to crash
+            return False 
+            
+    def query(self, sql):
+        if not self.connected:
+            raise RuntimeError("Not connected to database!")
+        print(f"  [DB] Executing: {sql}")
+        return ["Result 1", "Result 2"]
+
+
 # ============================================
 # TESTING THE CODE
 # ============================================
@@ -462,6 +520,12 @@ if __name__ == "__main__":
     cart1.add_item(Product("USB Cable", 12.99, 3))
     cart1.remove_item("Headphones")
     cart1.display()
+    
+    # Test Context Manager
+    print("\n17. Testing Context Manager (__enter__/__exit__):")
+    with DatabaseConnection("UserDB") as db:
+        db.query("SELECT * FROM users")
+    print("  [Main] Back to main (connection should be closed)")
     
     print("\n" + "=" * 60)
     print("KEY TAKEAWAYS:")

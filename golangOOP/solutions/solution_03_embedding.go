@@ -1,8 +1,9 @@
 package main
 
 import (
-"fmt"
-"time"
+	"fmt"
+	"strings"
+	"time"
 )
 
 // Vehicle is the base struct
@@ -63,8 +64,8 @@ m.Brand, m.Model, m.Year, m.EngineCC, sidecar)
 }
 
 func main() {
-fmt.Println("TESTING STRUCT EMBEDDING")
-fmt.Println("=".repeat(60))
+	fmt.Println("TESTING STRUCT EMBEDDING")
+	fmt.Println(strings.Repeat("=", 60))
 
 car := Car{
 Vehicle:  Vehicle{Brand: "Tesla", Model: "Model 3", Year: 2022},

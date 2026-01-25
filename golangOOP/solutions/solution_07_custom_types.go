@@ -2,56 +2,168 @@ package main
 
 import "fmt"
 
-// Solution for Task 7: CUSTOM TYPES
-// This is a working example demonstrating the concepts
-// See the task file for full requirements
+// Solution for Task 7: CUSTOM TYPES AND METHODS
+// =============================================
+
+// Custom types for temperature
+type Celsius float64
+type Fahrenheit float64
+type Kelvin float64
+
+// Celsius methods
+func (c Celsius) ToCelsius() Celsius {
+	return c
+}
+
+func (c Celsius) ToFahrenheit() Fahrenheit {
+	return Fahrenheit(c*9/5 + 32)
+}
+
+func (c Celsius) ToKelvin() Kelvin {
+	return Kelvin(c + 273.15)
+}
+
+func (c Celsius) String() string {
+	return fmt.Sprintf("%.2f°C", c)
+}
+
+// Fahrenheit methods
+func (f Fahrenheit) ToCelsius() Celsius {
+	return Celsius((f - 32) * 5 / 9)
+}
+
+func (f Fahrenheit) ToFahrenheit() Fahrenheit {
+	return f
+}
+
+func (f Fahrenheit) ToKelvin() Kelvin {
+	return f.ToCelsius().ToKelvin()
+}
+
+func (f Fahrenheit) String() string {
+	return fmt.Sprintf("%.2f°F", f)
+}
+
+// Kelvin methods
+func (k Kelvin) ToCelsius() Celsius {
+	return Celsius(k - 273.15)
+}
+
+func (k Kelvin) ToFahrenheit() Fahrenheit {
+	return k.ToCelsius().ToFahrenheit()
+}
+
+func (k Kelvin) ToKelvin() Kelvin {
+	return k
+}
+
+func (k Kelvin) String() string {
+	return fmt.Sprintf("%.2fK", k)
+}
+
+// Temperature interface
+type Temperature interface {
+	ToCelsius() Celsius
+	ToFahrenheit() Fahrenheit
+	ToKelvin() Kelvin
+}
+
+// Temperatures slice type
+type Temperatures []float64
+
+func (t Temperatures) Average() float64 {
+	if len(t) == 0 {
+		return 0
+	}
+	var sum float64
+	for _, v := range t {
+		sum += v
+	}
+	return sum / float64(len(t))
+}
+
+func (t Temperatures) Max() float64 {
+	if len(t) == 0 {
+		return 0
+	}
+	max := t[0]
+	for _, v := range t[1:] {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+
+func (t Temperatures) Min() float64 {
+	if len(t) == 0 {
+		return 0
+	}
+	min := t[0]
+	for _, v := range t[1:] {
+		if v < min {
+			min = v
+		}
+	}
+	return min
+}
+
+func (t *Temperatures) Add(temp float64) {
+	*t = append(*t, temp)
+}
+
+func (t Temperatures) Len() int {
+	return len(t)
+}
+
+// CompareTemperatures compares two temperatures
+func CompareTemperatures(t1, t2 Temperature) {
+	c1 := t1.ToCelsius()
+	c2 := t2.ToCelsius()
+
+	if c1 > c2 {
+		fmt.Printf("  %v is hotter than %v\n", t1, t2)
+	} else if c1 < c2 {
+		fmt.Printf("  %v is cooler than %v\n", t1, t2)
+	} else {
+		fmt.Printf("  %v and %v are the same temperature\n", t1, t2)
+	}
+}
 
 func main() {
-solution_0fmt.Println("SOLUTION 7: CUSTOM TYPES")
-solution_0fmt.Println("=".repeat(60))
-solution_0fmt.Println()
-solution_0fmt.Println("This solution demonstrates:")
-solution_0fmt.Println("- Key concepts from Task 7")
-solution_0fmt.Println("- Idiomatic Go patterns")
-solution_0fmt.Println("- Best practices")
-solution_0fmt.Println()
-solution_0fmt.Println("Refer to the task file for complete requirements.")
-solution_0fmt.Println("Complete this task yourself for maximum learning!")
-solution_0fmt.Println()
-solution_0fmt.Println("KEY CONCEPTS:")
-solution_0
-solution_0switch 7 {
-solution_0case 4:
-solution_0fmt.Println("- Exported vs Unexported names (Capital vs lowercase)")
-solution_0fmt.Println("- Getters (no direct access to private fields)")
-solution_0fmt.Println("- Error handling for validation")
-solution_0fmt.Println("- Constructor functions with validation")
-solution_0case 5:
-solution_0fmt.Println("- Interface embedding")
-solution_0fmt.Println("- Composing interfaces from smaller ones")
-solution_0fmt.Println("- Flexible API design")
-solution_0case 6:
-solution_0fmt.Println("- Type assertions: value, ok := i.(Type)")
-solution_0fmt.Println("- Type switches: switch v := i.(type)")
-solution_0fmt.Println("- Working with interface{}")
-solution_0case 7:
-solution_0fmt.Println("- Type definitions: type Celsius float64")
-solution_0fmt.Println("- Methods on custom types")
-solution_0fmt.Println("- Implementing fmt.Stringer")
-solution_0case 8:
-solution_0fmt.Println("- Custom error types")
-solution_0fmt.Println("- Sentinel errors")
-solution_0fmt.Println("- errors.Is() and errors.As()")
-solution_0fmt.Println("- Error wrapping with %w")
-solution_0case 9:
-solution_0fmt.Println("- Type parameters [T any]")
-solution_0fmt.Println("- Generic functions and types")
-solution_0fmt.Println("- Constraints")
-solution_0fmt.Println("- comparable and custom constraints")
-solution_0case 10:
-solution_0fmt.Println("- Singleton with sync.Once")
-solution_0fmt.Println("- Factory pattern")
-solution_0fmt.Println("- Builder pattern with fluent interface")
-solution_0fmt.Println("- Strategy pattern")
-solution_0esac
+	fmt.Println("SOLUTION 7: CUSTOM TYPES AND METHODS")
+	fmt.Println("====================================")
+
+	// Test temperature conversions
+	fmt.Println("\n1. Temperature Conversions:")
+	c := Celsius(100)
+	fmt.Printf("  %v = %v = %v\n", c, c.ToFahrenheit(), c.ToKelvin())
+
+	f := Fahrenheit(32)
+	fmt.Printf("  %v = %v = %v\n", f, f.ToCelsius(), f.ToKelvin())
+
+	k := Kelvin(0)
+	fmt.Printf("  %v = %v = %v\n", k, k.ToCelsius(), k.ToFahrenheit())
+
+	// Test String() method (fmt.Stringer interface)
+	fmt.Println("\n2. String() Method (fmt.Stringer):")
+	fmt.Printf("  Boiling point: %v\n", Celsius(100))
+	fmt.Printf("  Freezing point: %v\n", Fahrenheit(32))
+
+	// Test Temperatures slice
+	fmt.Println("\n3. Temperatures Slice Methods:")
+	temps := Temperatures{20.5, 22.3, 18.7, 25.1, 19.8}
+	fmt.Printf("  Temperatures: %v\n", temps)
+	fmt.Printf("  Average: %.2f\n", temps.Average())
+	fmt.Printf("  Max: %.2f\n", temps.Max())
+	fmt.Printf("  Min: %.2f\n", temps.Min())
+	fmt.Printf("  Length: %d\n", temps.Len())
+
+	temps.Add(30.0)
+	fmt.Printf("  After adding 30.0: %v\n", temps)
+
+	// Test Temperature interface
+	fmt.Println("\n4. Temperature Interface Comparison:")
+	CompareTemperatures(Celsius(25), Fahrenheit(80))
+	CompareTemperatures(Kelvin(300), Celsius(26.85))
 }

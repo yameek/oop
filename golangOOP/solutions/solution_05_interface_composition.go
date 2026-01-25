@@ -1,57 +1,149 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Solution for Task 5: INTERFACE COMPOSITION
-// This is a working example demonstrating the concepts
-// See the task file for full requirements
+// ==========================================
+
+// Basic interfaces
+type Reader interface {
+	Read() string
+}
+
+type Writer interface {
+	Write(data string) error
+}
+
+type Closer interface {
+	Close() error
+}
+
+// Composed interfaces (embedding)
+type ReadWriter interface {
+	Reader
+	Writer
+}
+
+type ReadWriteCloser interface {
+	Reader
+	Writer
+	Closer
+}
+
+// File implements ReadWriteCloser
+type File struct {
+	name    string
+	content string
+	isOpen  bool
+}
+
+func NewFile(name string) *File {
+	return &File{name: name, isOpen: true}
+}
+
+func (f *File) Read() string {
+	if !f.isOpen {
+		return ""
+	}
+	return f.content
+}
+
+func (f *File) Write(data string) error {
+	if !f.isOpen {
+		return errors.New("file is closed")
+	}
+	f.content += data
+	return nil
+}
+
+func (f *File) Close() error {
+	if !f.isOpen {
+		return errors.New("file already closed")
+	}
+	f.isOpen = false
+	fmt.Printf("  [File] Closed: %s\n", f.name)
+	return nil
+}
+
+// NetworkConnection implements ReadWriteCloser
+type NetworkConnection struct {
+	address   string
+	buffer    string
+	connected bool
+}
+
+func NewNetworkConnection(address string) *NetworkConnection {
+	return &NetworkConnection{address: address, connected: true}
+}
+
+func (n *NetworkConnection) Read() string {
+	if !n.connected {
+		return ""
+	}
+	return n.buffer
+}
+
+func (n *NetworkConnection) Write(data string) error {
+	if !n.connected {
+		return errors.New("connection closed")
+	}
+	n.buffer += data
+	return nil
+}
+
+func (n *NetworkConnection) Close() error {
+	if !n.connected {
+		return errors.New("already disconnected")
+	}
+	n.connected = false
+	fmt.Printf("  [Network] Disconnected from: %s\n", n.address)
+	return nil
+}
+
+// ProcessReadWriter demonstrates working with composed interface
+func ProcessReadWriter(rw ReadWriter) {
+	fmt.Println("  Writing data...")
+	rw.Write("Hello, World!")
+	fmt.Printf("  Reading back: %q\n", rw.Read())
+}
+
+// ProcessReadWriteCloser writes, reads, then closes
+func ProcessReadWriteCloser(rwc ReadWriteCloser) {
+	fmt.Println("  Writing data...")
+	rwc.Write("Important data")
+	fmt.Printf("  Reading: %q\n", rwc.Read())
+	rwc.Close()
+}
 
 func main() {
-solution_0fmt.Println("SOLUTION 5: INTERFACE COMPOSITION")
-solution_0fmt.Println("=".repeat(60))
-solution_0fmt.Println()
-solution_0fmt.Println("This solution demonstrates:")
-solution_0fmt.Println("- Key concepts from Task 5")
-solution_0fmt.Println("- Idiomatic Go patterns")
-solution_0fmt.Println("- Best practices")
-solution_0fmt.Println()
-solution_0fmt.Println("Refer to the task file for complete requirements.")
-solution_0fmt.Println("Complete this task yourself for maximum learning!")
-solution_0fmt.Println()
-solution_0fmt.Println("KEY CONCEPTS:")
-solution_0
-solution_0switch 5 {
-solution_0case 4:
-solution_0fmt.Println("- Exported vs Unexported names (Capital vs lowercase)")
-solution_0fmt.Println("- Getters (no direct access to private fields)")
-solution_0fmt.Println("- Error handling for validation")
-solution_0fmt.Println("- Constructor functions with validation")
-solution_0case 5:
-solution_0fmt.Println("- Interface embedding")
-solution_0fmt.Println("- Composing interfaces from smaller ones")
-solution_0fmt.Println("- Flexible API design")
-solution_0case 6:
-solution_0fmt.Println("- Type assertions: value, ok := i.(Type)")
-solution_0fmt.Println("- Type switches: switch v := i.(type)")
-solution_0fmt.Println("- Working with interface{}")
-solution_0case 7:
-solution_0fmt.Println("- Type definitions: type Celsius float64")
-solution_0fmt.Println("- Methods on custom types")
-solution_0fmt.Println("- Implementing fmt.Stringer")
-solution_0case 8:
-solution_0fmt.Println("- Custom error types")
-solution_0fmt.Println("- Sentinel errors")
-solution_0fmt.Println("- errors.Is() and errors.As()")
-solution_0fmt.Println("- Error wrapping with %w")
-solution_0case 9:
-solution_0fmt.Println("- Type parameters [T any]")
-solution_0fmt.Println("- Generic functions and types")
-solution_0fmt.Println("- Constraints")
-solution_0fmt.Println("- comparable and custom constraints")
-solution_0case 10:
-solution_0fmt.Println("- Singleton with sync.Once")
-solution_0fmt.Println("- Factory pattern")
-solution_0fmt.Println("- Builder pattern with fluent interface")
-solution_0fmt.Println("- Strategy pattern")
-solution_0esac
+	fmt.Println("SOLUTION 5: INTERFACE COMPOSITION")
+	fmt.Println("==================================")
+
+	// Test with File
+	fmt.Println("\n1. Testing File with ReadWriter:")
+	file := NewFile("document.txt")
+	ProcessReadWriter(file)
+
+	fmt.Println("\n2. Testing File with ReadWriteCloser:")
+	file2 := NewFile("data.txt")
+	ProcessReadWriteCloser(file2)
+
+	// Test with NetworkConnection
+	fmt.Println("\n3. Testing NetworkConnection with ReadWriter:")
+	conn := NewNetworkConnection("api.example.com:443")
+	ProcessReadWriter(conn)
+
+	fmt.Println("\n4. Testing NetworkConnection with ReadWriteCloser:")
+	conn2 := NewNetworkConnection("db.example.com:5432")
+	ProcessReadWriteCloser(conn2)
+
+	// Demonstrate interface satisfaction
+	fmt.Println("\n5. Interface Satisfaction Demo:")
+	var rwc ReadWriteCloser = NewFile("test.txt")
+	var rw ReadWriter = rwc   // ReadWriteCloser satisfies ReadWriter
+	var r Reader = rw         // ReadWriter satisfies Reader
+	fmt.Printf("All interfaces satisfied. Reader type: %T\n", r)
 }

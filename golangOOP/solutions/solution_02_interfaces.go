@@ -1,8 +1,9 @@
 package main
 
 import (
-"fmt"
-"math"
+	"fmt"
+	"math"
+	"strings"
 )
 
 // Shape interface defines behavior for shapes
@@ -46,12 +47,12 @@ return 2 * math.Pi * c.Radius
 // PrintShapeInfo demonstrates polymorphism
 // Takes any type that implements Shape interface
 func PrintShapeInfo(s Shape) {
-fmt.Println("\n" + "=".repeat(50))
-fmt.Printf("Shape Information\n")
-fmt.Println("=".repeat(50))
-fmt.Printf("Area: %.2f square units\n", s.Area())
-fmt.Printf("Perimeter: %.2f units\n", s.Perimeter())
-fmt.Println("=".repeat(50))
+	fmt.Println("\n" + strings.Repeat("=", 50))
+	fmt.Printf("Shape Information\n")
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Printf("Area: %.2f square units\n", s.Area())
+	fmt.Printf("Perimeter: %.2f units\n", s.Perimeter())
+	fmt.Println(strings.Repeat("=", 50))
 }
 
 // CompareShapes compares two shapes by area
@@ -73,8 +74,8 @@ fmt.Println("Both shapes have equal area!")
 }
 
 func main() {
-fmt.Println("TESTING INTERFACES - POLYMORPHISM")
-fmt.Println("=".repeat(60))
+	fmt.Println("TESTING INTERFACES - POLYMORPHISM")
+	fmt.Println(strings.Repeat("=", 60))
 
 // Create shapes
 rect := Rectangle{Length: 10, Width: 5}

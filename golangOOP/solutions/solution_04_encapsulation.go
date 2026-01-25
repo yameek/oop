@@ -1,57 +1,139 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Solution for Task 4: ENCAPSULATION AND PACKAGES
-// This is a working example demonstrating the concepts
-// See the task file for full requirements
+// ===============================================
+
+// BankAccount with unexported fields for encapsulation
+type BankAccount struct {
+	accountNumber string
+	accountHolder string
+	balance       float64
+	pin           int
+}
+
+// Sentinel errors
+var (
+	ErrInvalidPin        = errors.New("invalid PIN")
+	ErrInvalidAmount     = errors.New("amount must be positive")
+	ErrInsufficientFunds = errors.New("insufficient funds")
+	ErrPinMustBe4Digits  = errors.New("PIN must be 4 digits (1000-9999)")
+)
+
+// NewBankAccount constructor with validation
+func NewBankAccount(number, holder string, pin int) (*BankAccount, error) {
+	if pin < 1000 || pin > 9999 {
+		return nil, ErrPinMustBe4Digits
+	}
+	return &BankAccount{
+		accountNumber: number,
+		accountHolder: holder,
+		balance:       0,
+		pin:           pin,
+	}, nil
+}
+
+// Getters
+func (b *BankAccount) GetAccountNumber() string { return b.accountNumber }
+func (b *BankAccount) GetAccountHolder() string { return b.accountHolder }
+
+func (b *BankAccount) GetBalance(pin int) (float64, error) {
+	if pin != b.pin {
+		return 0, ErrInvalidPin
+	}
+	return b.balance, nil
+}
+
+// Deposit adds money to the account
+func (b *BankAccount) Deposit(amount float64, pin int) error {
+	if pin != b.pin {
+		return ErrInvalidPin
+	}
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+	b.balance += amount
+	return nil
+}
+
+// Withdraw removes money from the account
+func (b *BankAccount) Withdraw(amount float64, pin int) error {
+	if pin != b.pin {
+		return ErrInvalidPin
+	}
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+	if amount > b.balance {
+		return ErrInsufficientFunds
+	}
+	b.balance -= amount
+	return nil
+}
+
+// Transfer moves money between accounts
+func (b *BankAccount) Transfer(amount float64, pin int, recipient *BankAccount) error {
+	if err := b.Withdraw(amount, pin); err != nil {
+		return fmt.Errorf("transfer failed: %w", err)
+	}
+	// Deposit doesn't require PIN for recipient (bank internal operation)
+	recipient.balance += amount
+	return nil
+}
+
+// ChangePin updates the account PIN
+func (b *BankAccount) ChangePin(oldPin, newPin int) error {
+	if oldPin != b.pin {
+		return ErrInvalidPin
+	}
+	if newPin < 1000 || newPin > 9999 {
+		return ErrPinMustBe4Digits
+	}
+	b.pin = newPin
+	return nil
+}
 
 func main() {
-solution_0fmt.Println("SOLUTION 4: ENCAPSULATION AND PACKAGES")
-solution_0fmt.Println("=".repeat(60))
-solution_0fmt.Println()
-solution_0fmt.Println("This solution demonstrates:")
-solution_0fmt.Println("- Key concepts from Task 4")
-solution_0fmt.Println("- Idiomatic Go patterns")
-solution_0fmt.Println("- Best practices")
-solution_0fmt.Println()
-solution_0fmt.Println("Refer to the task file for complete requirements.")
-solution_0fmt.Println("Complete this task yourself for maximum learning!")
-solution_0fmt.Println()
-solution_0fmt.Println("KEY CONCEPTS:")
-solution_0
-solution_0switch 4 {
-solution_0case 4:
-solution_0fmt.Println("- Exported vs Unexported names (Capital vs lowercase)")
-solution_0fmt.Println("- Getters (no direct access to private fields)")
-solution_0fmt.Println("- Error handling for validation")
-solution_0fmt.Println("- Constructor functions with validation")
-solution_0case 5:
-solution_0fmt.Println("- Interface embedding")
-solution_0fmt.Println("- Composing interfaces from smaller ones")
-solution_0fmt.Println("- Flexible API design")
-solution_0case 6:
-solution_0fmt.Println("- Type assertions: value, ok := i.(Type)")
-solution_0fmt.Println("- Type switches: switch v := i.(type)")
-solution_0fmt.Println("- Working with interface{}")
-solution_0case 7:
-solution_0fmt.Println("- Type definitions: type Celsius float64")
-solution_0fmt.Println("- Methods on custom types")
-solution_0fmt.Println("- Implementing fmt.Stringer")
-solution_0case 8:
-solution_0fmt.Println("- Custom error types")
-solution_0fmt.Println("- Sentinel errors")
-solution_0fmt.Println("- errors.Is() and errors.As()")
-solution_0fmt.Println("- Error wrapping with %w")
-solution_0case 9:
-solution_0fmt.Println("- Type parameters [T any]")
-solution_0fmt.Println("- Generic functions and types")
-solution_0fmt.Println("- Constraints")
-solution_0fmt.Println("- comparable and custom constraints")
-solution_0case 10:
-solution_0fmt.Println("- Singleton with sync.Once")
-solution_0fmt.Println("- Factory pattern")
-solution_0fmt.Println("- Builder pattern with fluent interface")
-solution_0fmt.Println("- Strategy pattern")
-solution_0esac
+	fmt.Println("SOLUTION 4: ENCAPSULATION AND PACKAGES")
+	fmt.Println("=======================================")
+
+	// Create accounts
+	alice, err := NewBankAccount("ACC001", "Alice Smith", 1234)
+	if err != nil {
+		fmt.Println("Error creating account:", err)
+		return
+	}
+	bob, _ := NewBankAccount("ACC002", "Bob Jones", 5678)
+
+	fmt.Printf("\n1. Created accounts for %s and %s\n", alice.GetAccountHolder(), bob.GetAccountHolder())
+
+	// Test deposit
+	fmt.Println("\n2. Testing Deposit:")
+	alice.Deposit(1000, 1234)
+	balance, _ := alice.GetBalance(1234)
+	fmt.Printf("Alice's balance after $1000 deposit: $%.2f\n", balance)
+
+	// Test wrong PIN
+	fmt.Println("\n3. Testing Wrong PIN:")
+	err = alice.Withdraw(100, 9999)
+	fmt.Printf("Withdraw with wrong PIN: %v\n", err)
+
+	// Test transfer
+	fmt.Println("\n4. Testing Transfer:")
+	alice.Transfer(250, 1234, bob)
+	aliceBal, _ := alice.GetBalance(1234)
+	bobBal, _ := bob.GetBalance(5678)
+	fmt.Printf("After transfer: Alice=$%.2f, Bob=$%.2f\n", aliceBal, bobBal)
+
+	// Test PIN change
+	fmt.Println("\n5. Testing PIN Change:")
+	alice.ChangePin(1234, 4321)
+	_, err = alice.GetBalance(1234) // Old PIN
+	fmt.Printf("Old PIN after change: %v\n", err)
+	balance, _ = alice.GetBalance(4321) // New PIN
+	fmt.Printf("New PIN works: $%.2f\n", balance)
 }

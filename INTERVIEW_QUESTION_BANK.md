@@ -211,6 +211,29 @@ This question bank takes you from basic proficiency to mastery (FAANG-level) wit
     *   **Node JSON.parse(50MB)**: It is CPU bound. It blocks the **Single Main Thread**. No health checks, no new connections, nothing works until strict parsing finishes.
     *   **Go Blocking Syscall**: Go runtime parks the *Thread* but moves context (P) to another thread. Other Goroutines keep running.
 
+### ⚡ Java 25 LTS & Modern Concurrency Deep Dive
+7.  **Virtual Threads vs. Platform Threads:**
+    *   **What are Virtual Threads and how do they differ from OS platform threads?**
+        *   **Answer**: Platform threads map 1-to-1 with kernel OS threads (high memory ~1MB, costly context switches). Virtual threads are lightweight user-mode threads managed by the JVM (~2KB stack, millions can run concurrently). When a virtual thread blocks on I/O, the JVM unmounts it from its underlying "carrier" platform thread, freeing the carrier thread to run other virtual threads.
+    *   **Do Virtual Threads make CPU-bound computations faster?**
+        *   **Answer**: **No**. Virtual threads provide high *throughput* for I/O-bound tasks (HTTP requests, DB queries), not raw computation speed. For CPU-bound tasks (encryption, video encoding), platform threads using the ForkJoinPool or traditional pools remain appropriate.
+
+8.  **Virtual Thread Pinning:**
+    *   **What is Virtual Thread "Pinning" and why does it happen?**
+        *   **Answer**: Pinning occurs when a virtual thread cannot be unmounted from its carrier thread during a blocking operation. This happens when blocking inside a `synchronized` block/method or inside a native method call. When pinned, the carrier thread remains blocked, defeating the purpose of virtual threads.
+    *   **How do you prevent Pinning in Java 25?**
+        *   **Answer**: Replace `synchronized` blocks with `java.util.concurrent.locks.ReentrantLock`. `ReentrantLock` allows the JVM to unmount virtual threads while waiting for lock acquisition. Use `-Djdk.tracePinnedThreads=short` to detect pinned threads during runtime.
+
+9.  **Structured Concurrency & Scoped Values (Java 25 Finalized):**
+    *   **What is `StructuredTaskScope` and why is it superior to unstructured `CompletableFuture`?**
+        *   **Answer**: Structured Concurrency treats sub-tasks running in separate threads as a single unit of work. `StructuredTaskScope` (`ShutdownOnFailure`, `ShutdownOnSuccess`) enforces that child threads are scoped to a `try-with-resources` block. If one sub-task fails, all sibling sub-tasks are automatically cancelled, preventing thread leaks. Thread dumps preserve parent-child hierarchy.
+    *   **Why are `ScopedValue`s preferred over `ThreadLocal` in virtual thread applications?**
+        *   **Answer**: `ThreadLocal` is mutable, un-scoped, and wasteful when millions of virtual threads exist (each keeping its own copy, risking memory leaks in thread pools). `ScopedValue` is immutable, bound to a specific lexical scope (automatic cleanup), and efficiently shared across structured sub-threads.
+
+10. **Stream Gatherers (`Gatherers.mapConcurrent`):**
+    *   **How does `Gatherers.mapConcurrent` improve concurrent stream processing in Java 25?**
+        *   **Answer**: Traditional `parallelStream()` uses `ForkJoinPool.commonPool` without built-in concurrency caps or backpressure. `Gatherers.mapConcurrent(maxConcurrency, mapper)` processes stream items concurrently using virtual threads while enforcing an upper limit on active concurrency and managing backpressure natively within the Stream pipeline.
+
 ---
 
 ## 🏗️ Part 6: Applied Design Patterns & Architecture
@@ -249,6 +272,43 @@ This question bank takes you from basic proficiency to mastery (FAANG-level) wit
 
 ---
 
+## 🧠 Part 4: JVM Architecture, GC & Memory Tuning (🔥 Top FAANG Topic)
+
+### 🟢 Basic
+1.  **Explain the JVM Memory Layout (Heap, Stack, Metaspace, Native Memory).**
+    *   **Answer:**
+        *   **Heap**: Shared memory storing object instances. Divided into Young Gen (Eden, S0, S1) and Old Gen (Tenured).
+        *   **Stack**: Per-thread execution stack storing Stack Frames (local variables, operand stack, frame data).
+        *   **Metaspace**: Stores class metadata, bytecode, and constant pools in native C-heap memory (replaced PermGen in Java 8).
+        *   **Native Memory**: Used by Direct ByteBuffers, C-heap allocations, and JIT Compiled Code Cache.
+
+2.  **What is the difference between `System.gc()` and automatic Garbage Collection?**
+    *   **Answer:** `System.gc()` sends a non-binding request to the JVM to run garbage collection. The JVM is not guaranteed to honor it immediately, or at all (and it can be disabled completely using `-XX:+DisableExplicitGC`).
+
+### 🟡 Intermediate
+3.  **Explain the Weak Generational Hypothesis and how G1GC leverages it.**
+    *   **Answer:** The Generational Hypothesis states that most objects die shortly after creation. G1GC divides the heap into equal-sized regions (1MB to 32MB). It collects regions with the most garbage first ("Garbage First") during Young GCs, keeping pause times predictable while promoting long-lived objects to Old Gen regions.
+
+4.  **What is the difference between `Class.forName("Foo")` and `ClassLoader.loadClass("Foo")`?**
+    *   **Answer:** `Class.forName()` loads, links, AND initializes the class, triggering `<clinit>` static initializer blocks. `ClassLoader.loadClass()` only loads and links the class lazily, deferring static initialization until the class is instantiated or its static members are accessed.
+
+5.  **Explain Escape Analysis and how the JIT compiler uses Scalar Replacement.**
+    *   **Answer:** Escape Analysis determines if an object allocated inside a method escapes the thread or method scope. If it does NOT escape ("No Escape"), the C2 compiler replaces the object allocation with primitive scalar local variables directly on the stack (Scalar Replacement), avoiding heap allocation and GC pressure completely.
+
+### 🔴 Master
+6.  **How do you diagnose and resolve a `java.lang.OutOfMemoryError: Direct buffer memory`?**
+    *   **Answer:**
+        *   **Root Cause**: Native off-heap memory limit specified by `-XX:MaxDirectMemorySize` was hit by `ByteBuffer.allocateDirect()`.
+        *   **Diagnosis**: Use `jcmd <pid> VM.native_memory` to monitor off-heap native allocations.
+        *   **Resolution**: Check for unreleased `DirectByteBuffer` references, increase `-XX:MaxDirectMemorySize`, or migrate to Java 22+ Foreign Memory API (`Arena.ofConfined()`) for deterministic lifecycle management.
+
+7.  **Why do standard timing loops (`System.nanoTime()`) fail for microbenchmarking, and how does JMH solve it?**
+    *   **Answer:**
+        *   **Pitfalls**: C2 compiler applies Dead-Code Elimination (DCE) to remove unused computation loops and Constant Folding to pre-compute fixed calculations.
+        *   **JMH Solution**: Uses `Blackhole.consume()` to create volatile consumption side-effects (preventing DCE) and non-constant `@State` fields (preventing Constant Folding) with dedicated warmup iterations.
+
+---
+
 ## 📌 Code Implementation References (Self-Study)
 *Practical code examples in this workspace that demonstrate the concepts above.*
 
@@ -258,7 +318,15 @@ This question bank takes you from basic proficiency to mastery (FAANG-level) wit
 | **Context Managers** | Python | [pythonOOP/solutions/solution_08_magic_methods.py](pythonOOP/solutions/solution_08_magic_methods.py) |
 | **Iterators & Symbols** | TypeScript | [typescriptOOP/solutions/solution_08_symbols_iterators.ts](typescriptOOP/solutions/solution_08_symbols_iterators.ts) |
 | **Design Patterns** | All | `*/solutions/solution_10_design_patterns.*` |
+| **Java Concurrency Track (Tasks 01-12)** | Java (25 LTS) | [javaThreads/README.md](javaThreads/README.md) |
+| **Virtual Threads & Java 25 Features** | Java | [javaThreads/solutions/Solution12VirtualThreadsAndModernJava.java](javaThreads/solutions/Solution12VirtualThreadsAndModernJava.java) |
+| **Deadlocks & Lock Ordering** | Java | [javaThreads/solutions/Solution03DeadlockLivelockStarvation.java](javaThreads/solutions/Solution03DeadlockLivelockStarvation.java) |
+| **CompletableFuture & Async Pipelines** | Java | [javaThreads/solutions/Solution08CompletableFuture.java](javaThreads/solutions/Solution08CompletableFuture.java) |
+| **Java JVM Architecture Track (Tasks 01-08)** | Java | [javaJVM/README.md](javaJVM/README.md) |
+| **JIT Escape Analysis & Scalar Replacement** | Java | [javaJVM/solutions/Solution05JITCompilerAndOptimizations.java](javaJVM/solutions/Solution05JITCompilerAndOptimizations.java) |
+| **Off-Heap Memory & Native Allocation** | Java | [javaJVM/solutions/Solution06OffHeapAndNativeMemory.java](javaJVM/solutions/Solution06OffHeapAndNativeMemory.java) |
 | **Collections Intro** | TS | [typescript-collections/COMPARISON.md](typescript-collections/COMPARISON.md) |
 | **Dependency Injection** | MD | [spring-vs-nestjs/DI_DEPENDENCY_DEEP_DIVE.md](spring-vs-nestjs/DI_DEPENDENCY_DEEP_DIVE.md) |
+
 
 

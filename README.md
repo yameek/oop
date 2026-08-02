@@ -8,7 +8,9 @@
 | Track | Start Here | Progress | Quick Reference |
 |-------|------------|----------|-----------------|
 | **Python** | [START_HERE.py](pythonOOP/START_HERE.py) | [Progress](pythonOOP/PROGRESS_TRACKER.md) | [Quick Ref](pythonOOP/QUICK_REFERENCE.md) |
-| **Java** | [START_HERE.java](javaOOP/START_HERE.java) | [Progress](javaOOP/PROGRESS_TRACKER.md) | [Quick Ref](javaOOP/QUICK_REFERENCE.md) |
+| **Java (OOP)** | [START_HERE.java](javaOOP/START_HERE.java) | [Progress](javaOOP/PROGRESS_TRACKER.md) | [Quick Ref](javaOOP/QUICK_REFERENCE.md) |
+| **Java (Threads & Concurrency)** | [START_HERE.java](javaThreads/START_HERE.java) | [Progress](javaThreads/PROGRESS_TRACKER.md) | [Quick Ref](javaThreads/QUICK_REFERENCE.md) |
+| **Java (JVM & GC Tuning)** | [START_HERE.java](javaJVM/START_HERE.java) | [Progress](javaJVM/PROGRESS_TRACKER.md) | [Quick Ref](javaJVM/QUICK_REFERENCE.md) |
 | **Go** | [START_HERE.go](golangOOP/START_HERE.go) | [Progress](golangOOP/PROGRESS_TRACKER.md) | [Quick Ref](golangOOP/QUICK_REFERENCE.md) |
 | **TypeScript** | [START_HERE.ts](typescriptOOP/START_HERE.ts) | [Progress](typescriptOOP/PROGRESS_TRACKER.md) | [Quick Ref](typescriptOOP/QUICK_REFERENCE.md) |
 
@@ -23,11 +25,25 @@ python task_01_basic_classes.py        # Run a task
 python solutions/solution_01_basic_classes.py  # Run solution
 ```
 
-### Java
+### Java (OOP)
 ```bash
 cd javaOOP
 javac Task01BasicClasses.java && java Task01BasicClasses
 javac solutions/Solution01BasicClasses.java && java -cp solutions Solution01BasicClasses
+```
+
+### Java (Threads & Concurrency — Java 25 LTS)
+```bash
+cd javaThreads
+javac Task01ThreadCreation.java && java Task01ThreadCreation
+javac solutions/Solution01ThreadCreation.java && java -cp solutions Solution01ThreadCreation
+```
+
+### Java (JVM Architecture & GC Tuning)
+```bash
+cd javaJVM
+javac Task01JVMMemoryLayout.java && java Task01JVMMemoryLayout
+javac solutions/Solution01JVMMemoryLayout.java && java -cp solutions Solution01JVMMemoryLayout
 ```
 
 ### Go
@@ -52,6 +68,7 @@ npx ts-node solutions/solution_01_basic_classes.ts
 |----------|-------------|
 | [📋 INTERVIEW_QUESTION_BANK.md](INTERVIEW_QUESTION_BANK.md) | **FAANG-level Q&A** covering OOP, Concurrency, Design Patterns with detailed answers |
 | [🔄 oop_lang_compare.md](oop_lang_compare.md) | Side-by-side language comparison (Classes, Inheritance, Interfaces) |
+| [🗺️ JAVA_LEARNING_ROADMAP.md](JAVA_LEARNING_ROADMAP.md) | **Future Java Expansion Plan** (JVM internals, GC, NIO, Modern Java, Reflection) |
 | [🍃 Spring vs NestJS](spring-vs-nestjs/DI_DEPENDENCY_DEEP_DIVE.md) | Dependency Injection deep dive |
 | [📚 Collections Comparison](typescript-collections/COMPARISON.md) | Java Collections vs TypeScript/JS |
 
@@ -70,9 +87,21 @@ oop/
 │   ├── task_01_basic_classes.py ... task_10_design_patterns.py
 │   └── solutions/
 │
-├── javaOOP/                     # Java track (10 tasks)
+├── javaOOP/                     # Java OOP track (10 tasks)
 │   ├── START_HERE.java
 │   ├── Task01BasicClasses.java ... Task10DesignPatterns.java
+│   └── solutions/
+│
+├── javaThreads/                 # ⚡ Java Threads & Concurrency track (12 tasks, Java 25 LTS)
+│   ├── START_HERE.java
+│   ├── README.md, QUICK_REFERENCE.md, PROGRESS_TRACKER.md
+│   ├── Task01ThreadCreation.java ... Task12VirtualThreadsAndModernJava.java
+│   └── solutions/
+│
+├── javaJVM/                     # 🧠 Java JVM Architecture & GC Tuning track (8 tasks)
+│   ├── START_HERE.java
+│   ├── README.md, QUICK_REFERENCE.md, PROGRESS_TRACKER.md
+│   ├── Task01JVMMemoryLayout.java ... Task08MicrobenchmarkingJMH.java
 │   └── solutions/
 │
 ├── golangOOP/                   # Go track (10 tasks)
